@@ -1,5 +1,6 @@
 from data import train_data, test_data
 import numpy as np
+from rnn import RNN
 
 # Create vocab
 vocab = list(set([w for text in train_data.keys() for w in text.split(' ')]))
@@ -30,5 +31,15 @@ def createInputs(text):
 
 
 
+def softmax(xs): 
+      # Applies the Softmax Function to the input array xs.
+    return np.exp(xs) / sum(np.exp(xs))
 
 
+# Initialize rnn
+rnn = RNN(vocab_size, 2)
+
+inputs = createInputs('i am very good')
+out, h = rnn.forward(inputs)
+prob = softmax(out)
+print(prob)
