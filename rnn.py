@@ -47,6 +47,42 @@ class RNN:
         # Calculate dL/dWhy and dL/dby.
         d_Why = d_y @ self.last_hs[n].T
         d_by = d_y
+        
+        # Initialize dL/dWhh, dL/dWxh, and dL/dbh to zero.
+        d_Whh = np.zeros(self.Whh.shape)
+        d_Wxh = np.zeros(self.Wxh.shape)
+        d_bh = np.zeros(self.bh.shape)
+
+        # Calculate dL/dh for the last h.
+        d_h = self.Why.T @ d_y
+
+        # Backpropagate through time.
+        for t in reversed(range(n)):
+        # An intermediate value: dL/dh * (1 - h^2)
+            temp = ((1 - self.last_hs[t + 1] ** 2) * d_h)
+
+            # dL/db = dL/dh * (1 - h^2)
+            d_bh += temp
+
+            # dL/dWhh = dL/dh * (1 - h^2) * h_{t-1}
+            d_Whh += temp @ self.last_hs[t].T
+
+            # dL/dWxh = dL/dh * (1 - h^2) * x
+            d_Wxh += temp @ self.last_inputs[t].T
+
+            # Next dL/dh = dL/dh * (1 - h^2) * Whh
+            d_h = self.Whh @ temp
+
+        # Clip to prevent exploding gradients.
+        for d in [d_Wxh, d_Whh, d_Why, d_bh, d_by]:
+            np.clip(d, -1, 1, out=d)
+
+        # Update weights and biases using gradient descent.
+        self.Whh -= learn_rate * d_Whh
+        self.Wxh -= learn_rate * d_Wxh
+        self.Why -= learn_rate * d_Why
+        self.bh -= learn_rate * d_bh
+        self.by -= learn_rate * d_by
 
         
         
