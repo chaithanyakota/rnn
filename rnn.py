@@ -23,9 +23,14 @@ class RNN:
         '''
         h = np.zeros((self.Whh.shape[0], 1))
         
+        self.last_inputs = inputs
+        self.last_hs = { 0: h }
+        
         # Perform each step of the RNN
         for i,x in enumerate(inputs): 
             h = np.tanh(self.Wxh @ x + self.Whh @ h + self.bh)
+            self.last_hs[i + 1] = h
+
             
         y = self.Why @ h + self.by
         
@@ -34,10 +39,14 @@ class RNN:
     def backprop(self, d_y, learn_rate=2e-2):
         '''
         Perform a backward pass of the RNN.
-        - d_y (dL/dy) has shape (output_size, 1).
+        - d_y (dL/dy) (L = loss) has shape (output_size, 1).
         - learn_rate is a float.
         '''
-        pass
+        
+        n = len(self.last_inputs)
+        # Calculate dL/dWhy and dL/dby.
+        d_Why = d_y @ self.last_hs[n].T
+        d_by = d_y
 
         
         
