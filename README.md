@@ -1,1 +1,3 @@
 # rnn
+
+Sentiment analysis rnn
